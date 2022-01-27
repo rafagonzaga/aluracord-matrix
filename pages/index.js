@@ -1,36 +1,7 @@
 import { Box, Button, Text, TextField, Image } from "@skynexui/components";
+import React from "react";
 import appConfig from "../config.json";
-
-function GlobalStyle() {
-  return (
-    <style global jsx>{`
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-      body {
-        font-family: "Open Sans", sans-serif;
-      }
-      /* App fit Height */
-      html,
-      body,
-      #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-      #__next {
-        flex: 1;
-      }
-      #__next > * {
-        flex: 1;
-      }
-      /* ./App fit Height */
-    `}</style>
-  );
-}
+import { useRouter } from 'next/router';
 
 function Titulo(props) {
   console.log(props.children);
@@ -66,11 +37,14 @@ function Titulo(props) {
 //   export default HomePage
 
 export default function PaginaInicial() {
-  const username = "rafagonzaga";
+  // const username = "rafagonzaga";
+  const [username, setUsername] = React.useState('rafagonzaga');
+  // console.log('stateDoReact >>>', username);
+  const roteamento = useRouter();
+  // console.log(roteamento);
 
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: "flex",
@@ -105,6 +79,12 @@ export default function PaginaInicial() {
           {/* Formulário */}
           <Box
             as="form"
+            onSubmit={function (event){
+              event.preventDefault();
+              console.log('Alguém submeteu o form');
+              // window.location.href='/chat';
+              roteamento.push('/chat');
+            }}
             styleSheet={{
               display: "flex",
               flexDirection: "column",
@@ -126,7 +106,21 @@ export default function PaginaInicial() {
               {appConfig.name}
             </Text>
 
-            <TextField
+            <input 
+              type="text"
+              value={username}
+              onChange={function handler(event){
+                console.log("usuário digitou", event.target.value);
+                // Onde está o valor
+                const valor = event.target.value;
+                // Troca o valor da variável
+                // por meio do React e avise que quem precisa
+                setUsername(valor);
+              }}
+
+            />
+
+            {/* <TextField
               fullWidth
               textFieldColors={{
                 neutral: {
@@ -136,7 +130,7 @@ export default function PaginaInicial() {
                   backgroundColor: appConfig.theme.colors.neutrals[800],
                 },
               }}
-            />
+            /> */}
             <Button
               type="submit"
               label="Entrar"
