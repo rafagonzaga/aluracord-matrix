@@ -1,7 +1,15 @@
-import { Box, Button, Image, Text, TextField } from '@skynexui/components';
-import React from 'react';
+import { Box, Button, Image, Text, TextField } from "@skynexui/components";
+import React from "react";
 
-import appConfig from '../config.json';
+import appConfig from "../config.json";
+import { createClient } from "@supabase/supabase-js";
+
+
+// Como fazer AJAX: https://medium.com/@omariosouto/entendendo-como-fazer-ajax-com-a-fetchapi-977ff20da3c6
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzM2OTc1NCwiZXhwIjoxOTU4OTQ1NzU0fQ.A_BJjfce5ykqW73mlm0Kl0-ScroGQOnoc1NHbYKGLYY";
+const SUPABASE_URL = "https://ofqkdtjvrqmdddsjbggo.supabase.co";
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
   const [mensagem, setMensagem] = React.useState("");
@@ -17,13 +25,36 @@ export default function ChatPage() {
     - [X] Vamos usar o onChange usa o useState (ter if pra caso seja enter pra limpar a variavel)
     - [X] Lista de mensagens 
     */
+
+  React.useEffect(() => {
+    supabaseClient
+      .from("mensagens")
+      .select("*")
+      .order('id', { ascending: false })
+      .then(({ data }) => {
+        // console.log("Dados da consulta:", dados);
+        setListaDeMensagens(data);
+      });
+  }, []);
+
   function handleNovaMensagem(novaMensagem) {
     const mensagem = {
-      id: listaDeMensagens.length + 1,
+      // id: listaDeMensagens.length + 1,
       de: "vanessametonini",
       texto: novaMensagem,
     };
-    setListaDeMensagens([mensagem, ...listaDeMensagens]); // A ordem importa aqui, pois inverte a forma de exibir
+
+    supabaseClient
+      .from('mensagens')
+      .insert([
+        // Tem que ser um objeto com os MESMOS CAMPOS que você escreveu no supabase
+        mensagem
+      ])
+      .then(({ data }) => {
+        console.log('Criando mensagem: ', data);
+        setListaDeMensagens([data[0], ...listaDeMensagens]); // A ordem importa aqui, pois inverte a forma de exibir
+      });
+
     setMensagem("");
   }
 
@@ -68,7 +99,6 @@ export default function ChatPage() {
             padding: "16px",
           }}
         >
-          
           <MessageList mensagens={listaDeMensagens} />
           {/* Lista de mensagens: */}
 
@@ -186,11 +216,9 @@ function MessageList(props) {
                   display: "inline-block",
                   marginRight: "8px",
                 }}
-                src={`https://github.com/vanessametonini.png`}
+                src={`https://github.com/${mensagem.de}.png`}
               />
-              <Text tag="strong">
-                {mensagem.de}
-              </Text>
+              <Text tag="strong">{mensagem.de}</Text>
               <Text
                 styleSheet={{
                   fontSize: "10px",
@@ -199,7 +227,7 @@ function MessageList(props) {
                 }}
                 tag="span"
               >
-                {(new Date().toLocaleDateString())}
+                {new Date().toLocaleDateString()}
               </Text>
             </Box>
             {mensagem.texto}
